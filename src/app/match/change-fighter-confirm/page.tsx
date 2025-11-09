@@ -4,10 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { getFighterName } from '@/lib/fighters'
-
-export const dynamic = 'force-dynamic'
-export const dynamicParams = true
-export const revalidate = 0
 import { 
   createMatchSession, 
   getMatchSession, 
