@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
@@ -67,19 +69,7 @@ export default function FinalResultPage() {
         
         const opponentId = isPlayer1 ? matchSession.player2_id : matchSession.player1_id
         
-        console.log('=== RATING SAVE DEBUG ===')
-        console.log('myId:', myId)
-        console.log('player1_id:', matchSession.player1_id)
-        console.log('player2_id:', matchSession.player2_id)
-        console.log('isPlayer1:', isPlayer1)
-        console.log('opponentId:', opponentId)
-        console.log('didIWin:', didIWin)
-        
-        if (myId === opponentId) {
-          console.error('ERROR: myId === opponentId! This should not happen!')
-          console.error('Match session:', matchSession)
-          return
-        }
+        console.log('Saving ratings:', { myId, opponentId, didIWin, isPlayer1 })
         
         // 自分のレーティングを更新
         const result = await recordMatch(myId, opponentId, didIWin)

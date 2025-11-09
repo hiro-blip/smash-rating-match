@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
@@ -39,54 +41,21 @@ export default function ChangeFighterConfirmPage() {
     if (!loading && !user) {
       router.push('/login')
     } else if (user) {
-      const loadProfile = async () => {
-        // localStorageから取得を試みる
-        const savedProfile = localStorage.getItem(`profile_${user.id}`)
-        if (savedProfile) {
-          const data = JSON.parse(savedProfile)
-          console.log('Profile loaded from localStorage:', data)
-          setProfile({ 
-            username: data.username || 'あなた',
-            mainFighter: data.mainFighter || '' 
-          })
-        } else {
-          // localStorageにない場合、Supabaseから取得
-          console.log('Profile not in localStorage, fetching from Supabase')
-          const { supabase } = await import('@/lib/supabase')
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('username, main_fighter')
-            .eq('user_id', user.id)
-            .single()
-          
-          if (data && !error) {
-            console.log('Profile loaded from Supabase:', data)
-            const profileData = {
-              username: data.username || 'あなた',
-              mainFighter: data.main_fighter || ''
-            }
-            setProfile(profileData)
-            // localStorageに保存
-            localStorage.setItem(`profile_${user.id}`, JSON.stringify(profileData))
-          } else {
-            console.error('Failed to load profile:', error)
-            // デフォルト値を設定
-            setProfile({
-              username: 'あなた',
-              mainFighter: ''
-            })
-          }
-        }
-        
-        // レーティング情報を取得
-        const ratingData = localStorage.getItem(`rating_${user.id}`)
-        if (ratingData) {
-          const rating = JSON.parse(ratingData)
-          setMyRating(rating.rating || 1500)
-        }
+      const savedProfile = localStorage.getItem(`profile_${user.id}`)
+      if (savedProfile) {
+        const data = JSON.parse(savedProfile)
+        setProfile({ 
+          username: data.username || 'あなた',
+          mainFighter: data.mainFighter || '' 
+        })
       }
       
-      loadProfile()
+      // レーティング情報を取得
+      const ratingData = localStorage.getItem(`rating_${user.id}`)
+      if (ratingData) {
+        const rating = JSON.parse(ratingData)
+        setMyRating(rating.rating || 1500)
+      }
     }
   }, [user, loading, router])
 
@@ -125,15 +94,13 @@ export default function ChangeFighterConfirmPage() {
             user.id,
             profile.username,
             profile.mainFighter,
-            null, // player2_idは後で更新
+            '', // player2_idは後で更新
             opponentName,
             opponentMainFighter
           )
           
           if (result.success && result.session) {
             setMatchSession(result.session)
-          } else {
-            console.error('Failed to create initial session:', result.error)
           }
         }
       }
@@ -191,57 +158,30 @@ export default function ChangeFighterConfirmPage() {
   }
 
   const handleNoChange = async () => {
-    console.log('=== handleNoChange START ===')
-    console.log('user:', user)
-    console.log('profile:', profile)
-    console.log('isPlayer2:', isPlayer2)
-    console.log('matchSession:', matchSession)
+    if (!user || !profile) return
     
-    if (!user || !profile) {
-      console.error('Missing user or profile!', { user, profile })
-      alert('プロフィール情報の読み込み中です。少し待ってから再度お試しください。')
-      return
-    }
-    
-    console.log('handleNoChange called', { user: user.id, profile, isPlayer2, matchSession })
-    
-    // セッションを取得または作成
+    // セッションがまだ作成されていない場合は作成（プレイヤー1のみ）
     let currentSession = matchSession
-    if (!currentSession) {
-      // セッションがない場合、取得を試みる
-      const { success, session } = await getMatchSession(roomCode)
-      if (success && session) {
-        currentSession = session
-        setMatchSession(session)
-      } else if (!isPlayer2) {
-        // プレイヤー1の場合のみ作成
-        const result = await createMatchSession(
-          roomCode,
-          user.id,
-          profile.username,
-          profile.mainFighter,
-          null, // プレイヤー2のIDは後で更新される
-          opponentName,
-          opponentMainFighter
-        )
-        
-        if (!result.success) {
-          console.error('Failed to create session:', result.error)
-          alert(`セッション作成エラー: ${result.error}`)
-          return
-        }
-        currentSession = result.session || null
-      } else {
-        // プレイヤー2でセッションがない場合はエラー
-        console.error('Player2 but no session found')
-        alert('セッションが見つかりません。プレイヤー1が先に操作してください。')
+    if (!currentSession && !isPlayer2) {
+      const result = await createMatchSession(
+        roomCode,
+        user.id,
+        profile.username,
+        profile.mainFighter,
+        user.id, // 仮のID（実際のプレイヤー2が来たら更新される）
+        opponentName,
+        opponentMainFighter
+      )
+      
+      if (!result.success) {
+        console.error('Failed to create session:', result.error)
         return
       }
+      currentSession = result.session || null
     }
     
     // プレイヤー2の場合、自分の情報を更新
     if (isPlayer2 && currentSession) {
-      console.log('Updating player2 info:', { user: user.id, username: profile.username, fighter: profile.mainFighter })
       await updatePlayer2Info(roomCode, user.id, profile.username, profile.mainFighter)
     }
     
@@ -258,57 +198,30 @@ export default function ChangeFighterConfirmPage() {
   }
 
   const handleChange = async () => {
-    console.log('=== handleChange START ===')
-    console.log('user:', user)
-    console.log('profile:', profile)
-    console.log('isPlayer2:', isPlayer2)
-    console.log('matchSession:', matchSession)
+    if (!user || !profile) return
     
-    if (!user || !profile) {
-      console.error('Missing user or profile!', { user, profile })
-      alert('プロフィール情報の読み込み中です。少し待ってから再度お試しください。')
-      return
-    }
-    
-    console.log('handleChange called', { user: user.id, profile, isPlayer2, matchSession })
-    
-    // セッションを取得または作成
+    // セッションがまだ作成されていない場合は作成（プレイヤー1のみ）
     let currentSession = matchSession
-    if (!currentSession) {
-      // セッションがない場合、取得を試みる
-      const { success, session } = await getMatchSession(roomCode)
-      if (success && session) {
-        currentSession = session
-        setMatchSession(session)
-      } else if (!isPlayer2) {
-        // プレイヤー1の場合のみ作成
-        const result = await createMatchSession(
-          roomCode,
-          user.id,
-          profile.username,
-          profile.mainFighter,
-          null, // プレイヤー2のIDは後で更新される
-          opponentName,
-          opponentMainFighter
-        )
-        
-        if (!result.success) {
-          console.error('Failed to create session:', result.error)
-          alert(`セッション作成エラー: ${result.error}`)
-          return
-        }
-        currentSession = result.session || null
-      } else {
-        // プレイヤー2でセッションがない場合はエラー
-        console.error('Player2 but no session found')
-        alert('セッションが見つかりません。プレイヤー1が先に操作してください。')
+    if (!currentSession && !isPlayer2) {
+      const result = await createMatchSession(
+        roomCode,
+        user.id,
+        profile.username,
+        profile.mainFighter,
+        user.id, // 仮のID
+        opponentName,
+        opponentMainFighter
+      )
+      
+      if (!result.success) {
+        console.error('Failed to create session:', result.error)
         return
       }
+      currentSession = result.session || null
     }
     
     // プレイヤー2の場合、自分の情報を更新
     if (isPlayer2 && currentSession) {
-      console.log('Updating player2 info:', { user: user.id, username: profile.username, fighter: profile.mainFighter })
       await updatePlayer2Info(roomCode, user.id, profile.username, profile.mainFighter)
     }
     
@@ -485,29 +398,23 @@ export default function ChangeFighterConfirmPage() {
           {/* 選択ボタン */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <button
-              onClick={(e) => {
-                console.log('Change button clicked!', e)
-                handleChange()
-              }}
+              onClick={handleChange}
               disabled={myConfirmed}
               className={`px-8 py-6 text-white font-bold text-xl rounded-lg transition-colors border-2 ${
                 myConfirmed
                   ? 'bg-slate-700 border-slate-600 cursor-not-allowed opacity-50'
-                  : 'bg-slate-700 border-slate-600 hover:bg-slate-600 hover:border-slate-500 active:bg-slate-500'
+                  : 'bg-slate-700 border-slate-600 hover:bg-slate-600 hover:border-slate-500'
               }`}
             >
               ファイター変更する
             </button>
             <button
-              onClick={(e) => {
-                console.log('No change button clicked!', e)
-                handleNoChange()
-              }}
+              onClick={handleNoChange}
               disabled={myConfirmed}
               className={`px-8 py-6 text-white font-bold text-xl rounded-lg transition-colors shadow-lg ${
                 myConfirmed
                   ? 'bg-green-700 cursor-not-allowed'
-                  : 'bg-primary-600 hover:bg-primary-700 hover:shadow-xl active:bg-primary-800'
+                  : 'bg-primary-600 hover:bg-primary-700 hover:shadow-xl'
               }`}
             >
               {myConfirmed ? '✓ 確認済み' : 'ファイター変更しない'}
@@ -515,7 +422,7 @@ export default function ChangeFighterConfirmPage() {
           </div>
 
           {/* ヘルプ */}
-          <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-4 mb-4">
+          <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <div className="text-2xl">💡</div>
               <div className="text-slate-300 text-sm">
@@ -528,21 +435,6 @@ export default function ChangeFighterConfirmPage() {
               </div>
             </div>
           </div>
-
-          {/* デバッグ情報 */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-4 text-xs">
-              <div className="text-yellow-400 font-bold mb-2">デバッグ情報:</div>
-              <div className="text-yellow-200 space-y-1">
-                <div>User ID: {user?.id || 'なし'}</div>
-                <div>Username: {profile?.username || 'なし'}</div>
-                <div>Main Fighter: {profile?.mainFighter || 'なし'}</div>
-                <div>Is Player2: {isPlayer2 ? 'はい' : 'いいえ'}</div>
-                <div>Match Session: {matchSession ? 'あり' : 'なし'}</div>
-                <div>My Confirmed: {myConfirmed ? 'はい' : 'いいえ'}</div>
-              </div>
-            </div>
-          )}
         </div>
       </main>
     </div>
