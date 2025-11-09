@@ -101,6 +101,20 @@ export function getFighterName(fighterId: string): string {
   return fighter ? fighter.name : '不明'
 }
 
+// ファイター画像のパスを取得
+export function getFighterImagePath(fighterId: string): string | null {
+  const fighter = fighters.find(f => f.id === fighterId)
+  if (!fighter) return null
+  
+  // マリオの場合の例
+  if (fighter.id === '1') {
+    return '/fighters/1 - Mario/chara_0_mario_00.png'
+  }
+  
+  // 他のファイターは順次追加予定
+  return null
+}
+
 // ファイターを番号順にソート
 export function getSortedFighters(): Fighter[] {
   return [...fighters].sort((a, b) => {

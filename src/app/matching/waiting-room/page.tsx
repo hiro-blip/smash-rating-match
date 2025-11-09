@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { getUserStats } from '@/lib/rating'
 import { getFighterName } from '@/lib/fighters'
+import FighterIcon from '@/components/FighterIcon'
 import { 
   leaveMatchingQueue, 
   subscribeToMatchingQueue, 
@@ -272,12 +273,11 @@ export default function WaitingRoomPage() {
                   {profile?.mainFighter && (
                     <div className="pb-6 border-b border-slate-700">
                       <div className="text-slate-400 text-sm mb-2">使用キャラ</div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-4xl">🎮</div>
-                        <div className="text-white text-xl font-semibold">
-                          {getFighterName(profile.mainFighter)}
-                        </div>
-                      </div>
+                      <FighterIcon 
+                        fighterId={profile.mainFighter}
+                        size="lg"
+                        className="text-white"
+                      />
                     </div>
                   )}
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { getFighterName } from '@/lib/fighters'
+import FighterIcon from '@/components/FighterIcon'
 import { 
   createMatchSession, 
   getMatchSession, 
@@ -344,12 +345,11 @@ export default function ChangeFighterConfirmPage() {
                   {(isPlayer2 ? opponentMainFighter : profile?.mainFighter) && (
                     <div>
                       <div className="text-slate-400 text-sm mb-2">使用キャラ</div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-4xl">🎮</div>
-                        <div className="text-white text-xl font-semibold">
-                          {getFighterName(isPlayer2 ? opponentMainFighter : profile?.mainFighter || '')}
-                        </div>
-                      </div>
+                      <FighterIcon 
+                        fighterId={isPlayer2 ? opponentMainFighter : (profile?.mainFighter || '')}
+                        size="lg"
+                        className="text-white"
+                      />
                     </div>
                   )}
                 </div>
@@ -380,12 +380,11 @@ export default function ChangeFighterConfirmPage() {
                   {(isPlayer2 ? profile?.mainFighter : opponentMainFighter) && (
                     <div>
                       <div className="text-slate-400 text-sm mb-2">使用キャラ</div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-4xl">🎮</div>
-                        <div className="text-white text-xl font-semibold">
-                          {getFighterName(isPlayer2 ? (profile?.mainFighter || '') : opponentMainFighter)}
-                        </div>
-                      </div>
+                      <FighterIcon 
+                        fighterId={isPlayer2 ? (profile?.mainFighter || '') : opponentMainFighter}
+                        size="lg"
+                        className="text-white"
+                      />
                     </div>
                   )}
                 </div>

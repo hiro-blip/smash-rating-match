@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { fighters, getSortedFighters, getFighterName } from '@/lib/fighters'
+import FighterIcon from '@/components/FighterIcon'
 import Link from 'next/link'
 
 export default function SelectFighterPage() {
@@ -119,11 +120,14 @@ export default function SelectFighterPage() {
                   }`}
                 >
                   <div className="text-xs text-slate-400 mb-1">No.{fighter.number}</div>
-                  <div className={`font-bold text-sm ${
-                    selectedFighter === fighter.id ? 'text-white' : 'text-white'
-                  }`}>
-                    {fighter.name}
-                  </div>
+                  <FighterIcon 
+                    fighterId={fighter.id}
+                    size="sm"
+                    showName={true}
+                    className={`justify-center ${
+                      selectedFighter === fighter.id ? 'text-white' : 'text-white'
+                    }`}
+                  />
                 </button>
               ))}
             </div>
@@ -140,8 +144,12 @@ export default function SelectFighterPage() {
             <div className="bg-gradient-to-r from-red-600/20 to-red-800/20 border-2 border-red-500/50 rounded-lg p-6 mb-6">
               <div className="text-center mb-4">
                 <div className="text-red-400 text-sm mb-2">対戦相手が選択したファイター</div>
-                <div className="text-white text-3xl font-bold">
-                  {fighters.find(f => f.id === selectedFighter)?.name}
+                <div className="flex justify-center">
+                  <FighterIcon 
+                    fighterId={selectedFighter}
+                    size="lg"
+                    className="text-white text-3xl font-bold"
+                  />
                 </div>
               </div>
             </div>

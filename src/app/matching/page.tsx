@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { getUserStats } from '@/lib/rating'
 import { getUserProfile, migrateProfileToSupabase } from '@/lib/profile'
 import { getFighterName, fighters } from '@/lib/fighters'
+import FighterIcon from '@/components/FighterIcon'
 import { 
   joinMatchingQueue,
   findMatch,
@@ -424,8 +425,12 @@ export default function MatchingPage() {
                       {profile?.username || user.user_metadata?.username || 'あなた'}
                     </div>
                     {profile?.mainFighter && (
-                      <div className="text-slate-400 text-sm mb-1">
-                        {getFighterName(profile.mainFighter)}
+                      <div className="flex justify-center">
+                        <FighterIcon 
+                          fighterId={profile.mainFighter}
+                          size="sm"
+                          className="text-slate-400 text-sm mb-1"
+                        />
                       </div>
                     )}
                     <div className="text-primary-400 text-lg">Rating: {myRating}</div>
@@ -443,8 +448,12 @@ export default function MatchingPage() {
                       {opponent.username}
                     </div>
                     {opponent.mainFighter && (
-                      <div className="text-slate-400 text-sm mb-1">
-                        {getFighterName(opponent.mainFighter)}
+                      <div className="flex justify-center">
+                        <FighterIcon 
+                          fighterId={opponent.mainFighter}
+                          size="sm"
+                          className="text-slate-400 text-sm mb-1"
+                        />
                       </div>
                     )}
                     <div className="text-red-400 text-lg">

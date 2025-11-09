@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { getFighterName } from '@/lib/fighters'
+import FighterIcon from '@/components/FighterIcon'
 import { stages } from '@/lib/stages'
 import { 
   getMatchSession, 
@@ -150,8 +151,12 @@ export default function FinalResultPage() {
                   {matchSession.match_winner === 'player1' && ' 🏆'}
                 </div>
                 <div className="bg-primary-900/30 border border-primary-700/50 rounded-lg p-6">
-                  <div className="text-white text-2xl font-bold mb-2">
-                    {getFighterName(matchSession.player1_fighter || '')}
+                  <div className="flex justify-center mb-2">
+                    <FighterIcon 
+                      fighterId={matchSession.player1_fighter || ''}
+                      size="md"
+                      className="text-white"
+                    />
                   </div>
                   <div className="text-primary-400 text-4xl font-bold">
                     {matchSession.player1_wins}勝
@@ -164,8 +169,12 @@ export default function FinalResultPage() {
                   {matchSession.match_winner === 'player2' && ' 🏆'}
                 </div>
                 <div className="bg-red-900/30 border border-red-700/50 rounded-lg p-6">
-                  <div className="text-white text-2xl font-bold mb-2">
-                    {getFighterName(matchSession.player2_fighter || '')}
+                  <div className="flex justify-center mb-2">
+                    <FighterIcon 
+                      fighterId={matchSession.player2_fighter || ''}
+                      size="md"
+                      className="text-white"
+                    />
                   </div>
                   <div className="text-red-400 text-4xl font-bold">
                     {matchSession.player2_wins}勝
