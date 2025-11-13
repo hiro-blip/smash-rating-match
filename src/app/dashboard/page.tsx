@@ -3,10 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { getUserStats, getRatingHistory, getMatchHistory } from '@/lib/rating'
+import { getUserStats } from '@/lib/rating'
 import { getUserRank } from '@/lib/ranking'
-import { getFighterName } from '@/lib/fighters'
-import RatingGraph from '@/components/RatingGraph'
 import Link from 'next/link'
 
 export default function DashboardPage() {
@@ -47,14 +45,6 @@ export default function DashboardPage() {
         // ランキング順位を取得
         const userRank = await getUserRank(user.id)
         setRank(userRank)
-        
-        // レーティング履歴を取得
-        const history = await getRatingHistory(user.id)
-        setRatingHistory(history)
-        
-        // 対戦履歴を取得
-        const matchHistory = await getMatchHistory(user.id, 5)
-        setMatches(matchHistory)
       }
       
       loadUserData()
@@ -169,11 +159,6 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* レーティンググラフ */}
-        <div className="mb-8">
-          <RatingGraph history={ratingHistory} currentRating={stats.rating} />
-        </div>
-
         {/* アクションボタン */}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg p-8">
@@ -216,11 +201,6 @@ export default function DashboardPage() {
                     <div>
                       <div className="text-white font-semibold">
                         vs {match.opponent}
-                        {match.opponentFighter && (
-                          <span className="text-slate-400 text-sm ml-2">
-                            ({getFighterName(match.opponentFighter)})
-                          </span>
-                        )}
                       </div>
                       <div className="text-slate-400 text-sm">
                         {new Date(match.date).toLocaleDateString('ja-JP', { 
